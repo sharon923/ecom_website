@@ -1,0 +1,61 @@
+<!-- purchase_template.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Add your head content here -->
+</head>
+<body>
+    <div class="container mt-4">
+        <h1>Complete Purchase</h1>
+
+        <!-- Display Razorpay Payment Form -->
+        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+        <button id="rzp-button">Complete Purchase</button>
+
+        <a href="{% url 'view_cart' %}" class="btn btn-secondary mt-3">Back to Cart</a>
+    </div>
+
+    <script>
+        var razorpayKey = '{{ razorpay_key_id }}';
+
+        document.getElementById('rzp-button').onclick = function () {
+            // Make a request to your server to create a Razorpay order
+            fetch('{% url 'purchase' %}', {
+                method: 'POST',
+            })
+            .then(response => response.json())
+            .then(data => {
+                var options = {
+                    key: razorpayKey,
+                    amount: data.amount,
+                    currency: data.currency,
+                    name: 'CardamomHub',
+                    description: 'Purchase Description',
+                    order_id: data.order_id,
+                    handler: function (response) {
+                        // Handle the success callback
+                        console.log(response);
+                        // Redirect to success page
+                        window.location.href = '{% url 'success_page' %}';
+                    },
+                    prefill: {
+                        name: 'Customer Name',
+                        email: 'customer@example.com',
+                        contact: '9876543210'
+                    },
+                    theme: {
+                        color: '#3399cc'
+                    }
+                };
+
+                var rzp = new Razorpay(options);
+                rzp.open();
+            })
+            .catch(error => {
+                console.error('Error creating Razorpay order:', error);
+            });
+        };
+    </script>
+</body>
+</html>
